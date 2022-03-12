@@ -24,16 +24,17 @@ class _GifsPageState extends State<GifsPage> {
   final searchController = TextEditingController();
 
   void fetchGifs(String searchTerm) async {
-    final response = await http.get(Uri.parse(
-        'http://api.giphy.com/v1/gifs/search?api_key=klVrI5PS1PXLZ9E6uS8JGOctNnpu7BHd&q=' + searchTerm
-      )
-    );
+    String url = 'http://api.giphy.com/v1/gifs/search?api_key=klVrI5PS1PXLZ9E6uS8JGOctNnpu7BHd';
+    url += '&q=$searchTerm';
+    url += '&limit=100';
+
+    final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      List intermediateGif = [];
-      intermediateGif.addAll(json.decode(response.body)['data']);
+      List intermediateGifList = [];
+      intermediateGifList.addAll(json.decode(response.body)['data']);
       setState(() {
-        gifs = intermediateGif;
+        gifs = intermediateGifList;
         gifsFetchStatus = 'loaded';
       });
     } else {
@@ -72,6 +73,7 @@ class _GifsPageState extends State<GifsPage> {
             crossAxisCount: 2,
             mainAxisSpacing: 5.0,
             crossAxisSpacing: 5.0,
+            closeToTrailing: true,
           ),
           itemBuilder: (BuildContext c, int i) {
             return GestureDetector(
@@ -98,7 +100,18 @@ class _GifsPageState extends State<GifsPage> {
                   },
                 );
               },
-              child: Image.network(gifs[i]['images']['fixed_width']['url']),
+              child: Image.network(
+                gifs[i]['images']['fixed_width']['url'],
+                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(
+                    child: SizedBox(
+                      height: 100,
+                      child: Text('Loading...'),
+                    ),
+                  );
+                },
+              ),
             );
           },
           itemCount: gifs.length,
@@ -112,6 +125,7 @@ class _GifsPageState extends State<GifsPage> {
 
     return Material(
       child: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             Form(
