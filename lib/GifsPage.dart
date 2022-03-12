@@ -23,6 +23,7 @@ class _GifsPageState extends State<GifsPage> {
   ScreenArguments args = ScreenArguments('');
   final searchController = TextEditingController();
 
+  // Récupération des gifs
   void fetchGifs(String searchTerm) async {
     String url = 'http://api.giphy.com/v1/gifs/search?api_key=klVrI5PS1PXLZ9E6uS8JGOctNnpu7BHd';
     url += '&q=$searchTerm';
@@ -60,10 +61,12 @@ class _GifsPageState extends State<GifsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Par défaut, on affiche un message de chargement
     Widget displayedWidget = const Center(
       child: Text('Loading...'),
     );
 
+    // Lorsque les données ont été retournées par le serveur, on affiche la liste des gifs.
     if (gifs.length > 0) {
       displayedWidget = Expanded(
         // La documentation de ce plugin est infame
@@ -77,9 +80,11 @@ class _GifsPageState extends State<GifsPage> {
           ),
           itemBuilder: (BuildContext c, int i) {
             return GestureDetector(
+              // Permettre de télécharger ou partager l'image lorsque l'utilisateur maintient son doigt dessus
               onLongPress: () {
                 Share.share(gifs[i]['images']['original']['url']);
               },
+              // Afficher l'image dans une boite de dialogue lorsque l'utilisateur appuie dessus
               onTap: () {
                 showDialog(
                   context: context,
@@ -100,6 +105,7 @@ class _GifsPageState extends State<GifsPage> {
                   },
                 );
               },
+
               child: Image.network(
                 gifs[i]['images']['fixed_width']['url'],
                 loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
